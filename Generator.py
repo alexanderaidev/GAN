@@ -33,8 +33,8 @@ class Generator (nn.Module):
         def deconvolution_block(in_channels, out_channels, kernel_size, stride, padding = 1):
             return nn.Sequential(
                 nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, padding=padding, bias=True),
-                nn.BatchNorm2d(out_channels),
-                NoiseInjection(out_channels),
+                nn.BatchNorm2d(out_channels),                # normalizing the whole batch 
+                NoiseInjection(out_channels),                # every block contains Nois-Injection in Dim: 1
                 nn.LeakyReLU(0.01, inplace = True)
             )
         
