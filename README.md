@@ -14,11 +14,11 @@
   This script allows you to train your GAN using both models.
   Everything is explained in detail through comments in the code.
 
-
+#
 **⚠️ Note:**  
   Replace every occurrence of `Your path here` in the code with your own file or folder paths, then you’re all set.
 
-
+#
 
 **⚠️ Work in Progress:**  
  - Working on a heuristic-based algorithm to dynamically turn discriminator training on and off based on past performance.
