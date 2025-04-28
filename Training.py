@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader
-from torch.amp import autocast, GradScaler
+from torch.amp import autocast, GradScaler        # mixed-precision-training
 from Generator import Generator
 from Discriminator import Discriminator
 import multiprocessing
@@ -32,8 +32,8 @@ class CustomImageDataset(Dataset):
 
 def save_models():
     
-    model_saving_path_generator = r"C:\Users\Alex\Desktop\Python\KIs\GAN-small_architecture\Generator_PCBs_weights\Generator.pth"
-    model_saving_path_discriminator = r"C:\Users\Alex\Desktop\Python\KIs\GAN-small_architecture\Diskriminator_PCBs_weights\Discriminator.pth"
+    model_saving_path_generator = "Your path here"
+    model_saving_path_discriminator = "Your path here"
     
     torch.save({
     'model_state_dict': generator.state_dict(),
@@ -49,8 +49,8 @@ def save_models():
 
 def load_models():
     
-    model_loading_path_generator = r"C:\Users\Alex\Desktop\Python\KIs\GAN-small_architecture\Generator_PCBs_weights\Generator.pth"
-    model_loading_path_discriminator = r"C:\Users\Alex\Desktop\Python\KIs\GAN-small_architecture\Diskriminator_PCBs_weights\Discriminator.pth"
+    model_loading_path_generator = "Your path here"
+    model_loading_path_discriminator = "Your path here"
     
     checkpoint_generator = torch.load(model_loading_path_generator, weights_only=True)
     generator.load_state_dict(checkpoint_generator['model_state_dict'])
@@ -97,8 +97,8 @@ if __name__ == "__main__":
     
     print(f"Thats the parametercount: Discriminator: {p1} - Generator: {p2}.")
 
-    criterion = nn.BCEWithLogitsLoss()  # Binary Cross-Entropy Loss (Sigmoid-activation in both models)
-    scaler = GradScaler(device=device)
+    criterion = nn.BCEWithLogitsLoss()    # Binary Cross-Entropy for Mixed-Precision. You  could change it back to BCE, but then you also need the sigmoid-activation in the Discriminator after the last Layer.
+    scaler = GradScaler(device=device)    # FP16 Scaler 
     optimizer_G = torch.optim.Adam(generator.parameters(), lr=lr_generator, betas=(0.5, 0.999))
     optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=lr_discriminator, betas=(0.8, 0.999))
 
@@ -127,7 +127,7 @@ if __name__ == "__main__":
                 
      
     
-    path = r"C:\Users\Alex\Pictures\Datensätze\pcb-defect-dataset\train_better\spurious_copper_image"           
+    path = "Your dataset path here"          # You have to navigate to the folder, the dataset-class creates a dataset based on the images inside that folder.
                 
     dataset = CustomImageDataset(img_dir = path, transform = transform)   
      
@@ -159,6 +159,9 @@ if __name__ == "__main__":
             real_batch = batch.to(device)
             real_labels = torch.ones(batch_len, 1).to(device)  # Label 1 for real data
             
+            # ==========================================================================================================================================
+            # controlls the discriminator-training        || Currently it has to be manually set. - In the future, there will be a heuristic algorithm!
+            # ==========================================================================================================================================
             
             if (epoch+1) %2 == 0 and (counter+1) %5 == 0:
                 train_discriminator=True    # set Trainingvariable for Discriminator on True
@@ -173,9 +176,9 @@ if __name__ == "__main__":
                     latent_matrix = torch.randn(batch_len, latent_dim).to(device)
                     
                     with torch.no_grad():
-                        fake_data = generator(latent_matrix, batch_len)  # Generierte Daten
+                        fake_data = generator(latent_matrix, batch_len)  # Generated images
                         
-                    fake_labels = torch.zeros(batch_len, 1).to(device)  # Label 0 für generierte Daten
+                    fake_labels = torch.zeros(batch_len, 1).to(device)  # Label 0 for generated images
                     real_loss = criterion(discriminator(real_batch), real_labels)
                     fake_loss = criterion(discriminator(fake_data), fake_labels)
                     
@@ -213,23 +216,20 @@ if __name__ == "__main__":
         if (epoch+1) %1 == 0 and train_discriminator == True:
             print(f"Epoch [{epoch+1}] - Loss D: {loss_D.item():.4f}, Loss G: {loss_G.item():.4f}")
             
-            save_path = r"C:\Users\Alex\Pictures\Datensätze\Generiert"
-            
             matrix = fake_data.detach().cpu().numpy()
             image = np.transpose(matrix[0], (1, 2, 0))
             image = (image * 255).astype(np.uint8)
             image = Image.fromarray(image)
-            image.save(fr"C:\Users\Alex\Pictures\Datensätze\Generiert\Bild{epoch+1}.png")
+            image.save(f"Your path here/{epoch+1}.png")    # Thats the final path to save an image-example.
         
-        else:
+        else: 
             print(f"Epoch [{epoch+1}] - Loss G: {loss_G.item():.4f}")
-            save_path = r"C:\Users\Alex\Pictures\Datensätze\Generiert"
             
             matrix = fake_data.detach().cpu().numpy()
             image = np.transpose(matrix[0], (1, 2, 0))
             image = (image * 255).astype(np.uint8)
             image = Image.fromarray(image)
-            image.save(fr"C:\Users\Alex\Pictures\Datensätze\Generiert\Bild{epoch+1}.png")
+            image.save(f"Your path here/{epoch+1}.png")    # Thats the final path to save an image-example.
             
             
             
@@ -239,4 +239,4 @@ if __name__ == "__main__":
             torch.cuda.empty_cache()
             
             
-        train_discriminator = False
+        train_discriminator = False                # reset discriminator-training-flag
