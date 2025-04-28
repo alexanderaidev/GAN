@@ -29,13 +29,20 @@ class Generator (nn.Module):
                 nn.LeakyReLU(0.01, inplace=True)
             )
         
-        
+        # This Block contains Batchnorm and Noiseinjection
+        def deconvolution_block_nois(in_channels, out_channels, kernel_size, stride, padding = 1):
+            return nn.Sequential(
+                nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, padding=padding, bias=True),
+                nn.BatchNorm2d(out_channels),
+                NoiseInjection(out_channels),
+                nn.LeakyReLU(0.01, inplace = True)
+            )
+
+        # This Block contains just deconvolution and activation
         def deconvolution_block(in_channels, out_channels, kernel_size, stride, padding = 1):
             return nn.Sequential(
                 nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, padding=padding, bias=True),
-                nn.BatchNorm2d(out_channels),                # normalizing the whole batch 
-                NoiseInjection(out_channels),                # every block contains Nois-Injection in Dim: 1
-                nn.LeakyReLU(0.01, inplace = True)
+                nn.LeakyReLU(0.01, inplace=True)
             )
         
         
@@ -50,23 +57,23 @@ class Generator (nn.Module):
         
         self.dcv = nn.Sequential(
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),                                 
-            deconvolution_block(self.channels_for_convolution, features_d * 60, kernel_size=3, stride=1),       
+            deconvolution_block_nois(self.channels_for_convolution, features_d * 60, kernel_size=3, stride=1),       
             deconvolution_block(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
             deconvolution_block(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),                               
-            deconvolution_block(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
+            deconvolution_block_nois(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
             deconvolution_block(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
             deconvolution_block(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),                          
-            deconvolution_block(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
+            deconvolution_block_nois(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
             deconvolution_block(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
             deconvolution_block(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),                           
-            deconvolution_block(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
+            deconvolution_block_nois(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
             deconvolution_block(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
             deconvolution_block(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),                          
-            deconvolution_block(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
+            deconvolution_block_nois(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
             deconvolution_block(self.features_d * 60, features_d * 60, kernel_size=3, stride=1),
             deconvolution_block(self.features_d * 60, features_d * 30, kernel_size=3, stride=1),
             nn.Conv2d(self.features_d * 30, 3, kernel_size=1, stride=1, bias=True),
