@@ -3,4 +3,4 @@
 
 
 ** WIP ** 
-  - Working on an heuristik based algorithm to turn on / off the Diskriminator Training, based on past performance
+  - Working on a heuristic-based algorithm to dynamically turn discriminator training on and off based on past performance.
